@@ -1,1 +1,33 @@
-
+workflows:
+  ios-workflow:
+    name: My App iOS Build & Publish
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Magic
+    environment:
+      xcode: latest
+      ios_signing:
+        certificates:
+          - Magic
+        provisioning_profiles:
+          - "My App"
+          - "My App OneSignal"
+    scripts:
+      - name: Configure Xcode signing
+        script: |
+          xcode-project use-profiles --project "My App.xcodeproj"
+      - name: Debug and Resolve Packages
+        script: |
+          xcodebuild -resolvePackageDependencies -project "My App.xcodeproj"
+      - name: Build .ipa file
+        script: |
+          xcode-project build-ipa \
+            --project "My App.xcodeproj" \
+            --scheme "My App"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
